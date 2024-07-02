@@ -4,3 +4,5 @@ matplotlib
 transformers
 torch
 tokenizers
+pickle
+requests
