@@ -1,5 +1,6 @@
 import streamlit as st
 import pickle
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import re
 import requests
 import io
