@@ -1,12 +1,7 @@
 import streamlit as st
 import pickle
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import re
-from google.cloud import storage
-import os
-import tempfile
 import requests
-import torch
 import io
 
 

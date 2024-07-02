@@ -1,4 +1,3 @@
 pandas
 streamlit
 matplotlib
-google-cloud-storage
