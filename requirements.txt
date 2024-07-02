@@ -1,5 +1,6 @@
 pandas
 streamlit
 matplotlib
-transformers==4.21.0
+transformers==4.42.3
 torch
+tokenizers==0.10.3
