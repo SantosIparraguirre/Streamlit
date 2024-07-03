@@ -10,10 +10,9 @@ st.title('Menú')
 images = {
     "Objetivos": "./images/img_objetivos.png",
     "Alcances": "./images/alcances.png",
-    
-    "Fuentes": "./images",
+    "Fuentes": "./images/fuentes.png",
     "Arquitecturas-Tecnologias": "./images/arquitectura(2).png",
-    "Metodología del Trabajo - SCRUM": "./images/gantt(1).png",
+    "Metodología del Trabajo - SCRUM": "./images/gantt(1).png"
 }
 
 # Crear botones para cada imagen
