@@ -3,29 +3,22 @@ import pickle
 import streamlit as st
 
 @st.cache_resource
+# Funcion para cargar el modelo
 def load_model():
+    # Ruta del modelo
     bucket_name = "modelosllm"
     object_name = "car_model_electric.pkl"
     url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
     
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Esto lanzará una excepción para códigos de estado no exitosos
+
+    response = requests.get(url)
+    response.raise_for_status()  # Esto lanzará una excepción para códigos de estado no exitosos
         
-        # Crear un objeto de tipo archivo en memoria
-        file_object = pickle.loads(response.content)
-        
-        st.success("Modelo cargado exitosamente.")
-        return file_object
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error al descargar el archivo: {e}")
-        return None
-    except pickle.UnpicklingError as e:
-        st.error(f"Error al deserializar el modelo: {e}")
-        return None
-    except Exception as e:
-        st.error(f"Error inesperado al cargar el modelo: {e}")
-        return None
+    # Crear un objeto de tipo archivo en memoria
+    file_object = pickle.loads(response.content)
+    
+    return file_object
+
 
 # Cargar el modelo
 model, tokenizer = load_model()
