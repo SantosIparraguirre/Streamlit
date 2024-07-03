@@ -1,67 +1,42 @@
 import streamlit as st
 import pickle
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
 import re
 import requests
 import io
 
-
-
-# # Cargar el modelo y el tokenizer
-# @st.cache_resource
-# def load_model():
-#     with open('car_model.pkl', 'rb') as f:
-#         model, tokenizer = pickle.load(f)
-#     return model, tokenizer
-
-# model, tokenizer = load_model()
-
 @st.cache_resource
+# Funcion para cargar el modelo
 def load_model():
+    # Ruta del modelo
     bucket_name = "modelosllm"
     object_name = "car_model.pkl"
     url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
     
-    st.write(f"Intentando cargar el modelo desde: {url}")
+    response = requests.get(url)
+        
+    # # Crear un objeto de tipo archivo en memoria
+    # file_object = io.BytesIO(response.content)
+        
+    # # Cargar el modelo y el tokenizer directamente desde el objeto en memoria
+    # model, tokenizer = pickle.load(file_object)
+
+    # Crear un objeto de tipo archivo en memoria
+    file_object = pickle.loads(response.content)
     
-    try:
-        response = requests.get(url)
-        response.raise_for_status()  # Esto lanzará una excepción para códigos de estado no exitosos
-        
-        # Crear un objeto de tipo archivo en memoria
-        file_object = io.BytesIO(response.content)
-        
-        # Cargar el modelo y el tokenizer directamente desde el objeto en memoria
-        model, tokenizer = pickle.load(file_object)
-        
-        st.success("Modelo cargado exitosamente.")
-        return model, tokenizer
-    except requests.exceptions.RequestException as e:
-        st.error(f"Error al descargar el archivo: {e}")
-        return None, None
-    except pickle.UnpicklingError as e:
-        st.error(f"Error al deserializar el modelo: {e}")
-        return None, None
-    except Exception as e:
-        st.error(f"Error inesperado al cargar el modelo: {e}")
-        return None, None
+    return file_object
+
+    #return model, tokenizer
 
 # Cargar el modelo
 model, tokenizer = load_model()
 
-# Verificar si el modelo y el tokenizer se cargaron correctamente
-if model is None or tokenizer is None:
-    st.error("No se pudo cargar el modelo o el tokenizer.")
-else:
-    st.success("Modelo y tokenizer cargados correctamente.")
-
-
-# Definir las funciones necesarias
+# Función de generación de respuesta
 def generate_response(prompt, model, tokenizer):
     input_ids = tokenizer.encode(prompt, return_tensors='pt')
     output = model.generate(input_ids, max_length=200, num_return_sequences=1, no_repeat_ngram_size=2)
     return tokenizer.decode(output[0], skip_special_tokens=True)
 
+# Función para extraer información específica
 def extract_info(text):
     info = {}
     patterns = {
@@ -87,6 +62,7 @@ def extract_info(text):
     
     return info
 
+# Función para elaborar la respuesta
 def elaborate_response(info):
     responses = []
     
@@ -113,6 +89,7 @@ def elaborate_response(info):
     
     return ' '.join(responses)
 
+# Función para la respuesta detallada
 def generate_detailed_response(prompt, model, tokenizer):
     initial_response = generate_response(prompt, model, tokenizer)
     info = extract_info(initial_response)

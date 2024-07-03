@@ -9,10 +9,8 @@ def load_model():
     bucket_name = "modelosllm"
     object_name = "car_model_electric.pkl"
     url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
-    
 
     response = requests.get(url)
-    response.raise_for_status()  # Esto lanzará una excepción para códigos de estado no exitosos
         
     # Crear un objeto de tipo archivo en memoria
     file_object = pickle.loads(response.content)
