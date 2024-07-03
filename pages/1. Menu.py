@@ -8,8 +8,8 @@ st.title('Menú')
 
 # Diccionario con las imágenes y sus nombres
 images = {
-    "Objetivos": "./images",
-    "Alcances": "./images",
+    "Objetivos": "./images/img_objetivos.png",
+    "Alcances": "./images/alcances.png",
     
     "Fuentes": "./images",
     "Arquitecturas-Tecnologias": "./images/arquitectura(2).png",

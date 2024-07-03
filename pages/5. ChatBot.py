@@ -1,48 +1,63 @@
-import streamlit as st
+import requests
 import pickle
+import streamlit as st
 
 @st.cache_resource
 def load_model():
-    with open('./car_qa_model.pkl', 'rb') as f:
-        model, tokenizer = pickle.load(f)
-    return model, tokenizer
-
-def generate_answer(question, model, tokenizer, max_length=513):
-    input_text = f"Pregunta: {question}\nRespuesta:"
-    input_ids = tokenizer.encode(input_text, return_tensors='pt', truncation=True, max_length=512)
+    bucket_name = "modelosllm"
+    object_name = "car_model_electric.pkl"
+    url = f"https://storage.googleapis.com/{bucket_name}/{object_name}"
     
-    output = model.generate(
-        input_ids,
-        max_length=max_length,
-        num_return_sequences=1,
-        no_repeat_ngram_size=2,
-        do_sample=True,
-        top_k=50,
-        top_p=0.92,
-        temperature=0.5,
-    )
-    
-    answer = tokenizer.decode(output[0], skip_special_tokens=True)
-    return answer.split("Respuesta:")[-1].strip()
+    try:
+        response = requests.get(url)
+        response.raise_for_status()  # Esto lanzará una excepción para códigos de estado no exitosos
+        
+        # Crear un objeto de tipo archivo en memoria
+        file_object = pickle.loads(response.content)
+        
+        st.success("Modelo cargado exitosamente.")
+        return file_object
+    except requests.exceptions.RequestException as e:
+        st.error(f"Error al descargar el archivo: {e}")
+        return None
+    except pickle.UnpicklingError as e:
+        st.error(f"Error al deserializar el modelo: {e}")
+        return None
+    except Exception as e:
+        st.error(f"Error inesperado al cargar el modelo: {e}")
+        return None
 
-st.title("Asistente de Autos Eléctricos")
-
+# Cargar el modelo
 model, tokenizer = load_model()
 
-st.write("Este asistente puede responder preguntas sobre autos eléctricos. ¡Prueba haciendo una pregunta!")
 
-question = st.text_input("Tu pregunta:")
+def generate_response(prompt, model, tokenizer, max_length=100):
+    # Tokenizar la entrada
+    inputs = tokenizer.encode(prompt, return_tensors='pt')
+    
+    # Generar respuesta
+    outputs = model.generate(
+        inputs,
+        max_length=max_length,
+        num_return_sequences=1,
+        pad_token_id=tokenizer.eos_token_id,
+        do_sample=True,  # Para respuestas variadas
+        top_k=15,        # Para limitar el espacio de búsqueda a las 50 mejores opciones
+        top_p=0.95       # Para el método de muestreo nucleus
+    )
+    
+    # Decodificar la salida
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    return response
 
-if st.button("Obtener respuesta"):
-    if question:
-        with st.spinner('Generando respuesta...'):
-            answer = generate_answer(question, model, tokenizer)
-        st.write("Respuesta:", answer)
+# Interfaz de Streamlit
+st.title("Chatbot de autos eléctricos")
+
+prompt = st.text_input("Haz una pregunta:")
+
+if st.button("Enviar"):
+    if prompt:
+        response = generate_response(prompt, model, tokenizer)
+        st.write(response)
     else:
-        st.write("Por favor, ingresa una pregunta.")
-
-st.write("Ejemplos de preguntas que puedes hacer:")
-st.write("- ¿Cuál es la autonomía del Tesla Model 3?")
-st.write("- ¿Cuánto tarda en cargarse el Hyundai IONIQ?")
-st.write("- ¿Cuál es el precio del Ford Mustang Mach-E?")
-st.write("- ¿Por qué los autos eléctricos son más eficientes?")
+        st.write("Por favor ingresa una pregunta.")
